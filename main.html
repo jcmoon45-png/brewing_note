@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>드립 노트</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500;600&family=Noto+Serif+KR:wght@300;400;500&display=swap');
+
+  :root {
+    --navy: #1a1f2e;
+    --navy-mid: #242a3d;
+    --navy-light: #2e3650;
+    --copper: #c4854a;
+    --copper-light: #d9a06e;
+    --copper-dim: rgba(196,133,74,0.15);
+    --cream: #f0ead8;
+    --cream-dim: rgba(240,234,216,0.07);
+    --cream-soft: rgba(240,234,216,0.55);
+    --text: #e8e2d0;
+    --text-muted: rgba(232,226,208,0.45);
+    --text-soft: rgba(232,226,208,0.72);
+    --border: rgba(196,133,74,0.18);
+    --border-soft: rgba(232,226,208,0.1);
+    --red: #c0504a;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--navy);
+    color: var(--text);
+    font-family: 'DM Sans', 'Noto Serif KR', sans-serif;
+    min-height: 100vh;
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  /* ── Layout ── */
+  .app { display: flex; flex-direction: column; min-height: 100vh; max-width: 780px; margin: 0 auto; padding: 0 16px; }
+
+  /* ── Header ── */
+  header {
+    padding: 28px 0 0;
+    display: flex; align-items: flex-end; justify-content: space-between;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 16px; margin-bottom: 0;
+  }
+  .logo { display: flex; flex-direction: column; gap: 2px; }
+  .logo-title {
+    font-family: 'Noto Serif KR', serif;
+    font-size: 22px; font-weight: 400; letter-spacing: 0.04em;
+    color: var(--cream);
+  }
+  .logo-sub { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--copper); letter-spacing: 0.2em; text-transform: uppercase; }
+
+  /* ── Nav ── */
+  nav { display: flex; gap: 2px; padding: 12px 0; border-bottom: 1px solid var(--border-soft); margin-bottom: 24px; }
+  .nav-btn {
+    background: none; border: none; color: var(--text-muted); cursor: pointer;
+    font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500;
+    padding: 6px 14px; border-radius: 6px; transition: all 0.15s; letter-spacing: 0.02em;
+  }
+  .nav-btn:hover { color: var(--text-soft); background: var(--cream-dim); }
+  .nav-btn.active { color: var(--copper-light); background: var(--copper-dim); }
+
+  /* ── Sections ── */
+  .section { display: none; }
+  .section.visible { display: block; }
+
+  /* ── Cards ── */
+  .card {
+    background: var(--navy-mid); border: 1px solid var(--border-soft);
+    border-radius: 12px; padding: 20px; margin-bottom: 14px;
+  }
+  .card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 14px; }
+  .card-title { font-size: 13px; font-weight: 600; color: var(--copper-light); letter-spacing: 0.06em; text-transform: uppercase; }
+
+  /* ── Equipment Lists ── */
+  .eq-group { margin-bottom: 24px; }
+  .eq-label { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--copper); letter-spacing: 0.18em; text-transform: uppercase; margin-bottom: 10px; }
+  .eq-list { display: flex; flex-wrap: wrap; gap: 8px; }
+  .eq-tag {
+    background: var(--cream-dim); border: 1px solid var(--border);
+    border-radius: 20px; padding: 5px 14px;
+    font-size: 13px; color: var(--text-soft); display: flex; align-items: center; gap: 8px;
+  }
+  .eq-tag .del {
+    background: none; border: none; color: var(--text-muted); cursor: pointer;
+    font-size: 14px; line-height: 1; padding: 0 2px; transition: color 0.1s;
+  }
+  .eq-tag .del:hover { color: var(--red); }
+  .eq-add { display: flex; gap: 8px; margin-top: 10px; }
+
+  /* ── Inputs ── */
+  input[type=text], input[type=number], textarea, select {
+    background: var(--navy-light); border: 1px solid var(--border-soft);
+    border-radius: 8px; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 13px;
+    padding: 9px 12px; outline: none; transition: border-color 0.15s;
+    width: 100%;
+  }
+  input[type=text]:focus, input[type=number]:focus, textarea:focus, select:focus { border-color: var(--copper); }
+  select { appearance: none; cursor: pointer; }
+  select option { background: var(--navy-mid); }
+  textarea { resize: vertical; min-height: 80px; line-height: 1.6; }
+  input::placeholder, textarea::placeholder { color: var(--text-muted); }
+
+  /* ── Buttons ── */
+  .btn {
+    background: var(--copper); border: none; border-radius: 8px; color: var(--navy);
+    cursor: pointer; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 600;
+    padding: 9px 18px; transition: all 0.15s; letter-spacing: 0.02em;
+  }
+  .btn:hover { background: var(--copper-light); }
+  .btn-ghost {
+    background: transparent; border: 1px solid var(--border); color: var(--text-soft);
+  }
+  .btn-ghost:hover { border-color: var(--copper); color: var(--copper-light); background: var(--copper-dim); }
+  .btn-sm { padding: 6px 12px; font-size: 12px; border-radius: 6px; }
+  .btn-danger { background: transparent; border: 1px solid rgba(192,80,74,0.35); color: var(--red); }
+  .btn-danger:hover { background: rgba(192,80,74,0.12); border-color: var(--red); }
+
+  /* ── Form Grid ── */
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .form-group { display: flex; flex-direction: column; gap: 6px; }
+  .form-group.full { grid-column: 1 / -1; }
+  .form-label { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--copper); letter-spacing: 0.15em; text-transform: uppercase; }
+
+  /* ── Pour Steps ── */
+  .pour-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+  .pour-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px; }
+  .pour-row { display: grid; grid-template-columns: 40px 1fr 1fr 28px; gap: 8px; align-items: center; }
+  .pour-idx { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--copper); text-align: center; padding-top: 2px; }
+  .pour-del {
+    background: none; border: none; color: var(--text-muted); cursor: pointer;
+    font-size: 16px; line-height: 1; padding: 0; transition: color 0.1s;
+  }
+  .pour-del:hover { color: var(--red); }
+
+  /* ── Brew Log List ── */
+  .log-entry {
+    background: var(--navy-mid); border: 1px solid var(--border-soft);
+    border-radius: 12px; padding: 18px 20px; margin-bottom: 12px; cursor: pointer;
+    transition: border-color 0.15s;
+  }
+  .log-entry:hover { border-color: var(--copper); }
+  .log-entry-top { display: flex; justify-content: space-between; align-items: flex-start; }
+  .log-bean { font-family: 'Noto Serif KR', serif; font-size: 16px; color: var(--cream); margin-bottom: 4px; }
+  .log-meta { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--text-muted); letter-spacing: 0.1em; }
+  .log-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+  .log-chip {
+    background: var(--cream-dim); border: 1px solid var(--border-soft);
+    border-radius: 4px; padding: 2px 8px;
+    font-family: 'DM Mono', monospace; font-size: 10px; color: var(--text-muted); letter-spacing: 0.05em;
+  }
+  .log-note { margin-top: 10px; font-size: 13px; color: var(--text-soft); font-style: italic; line-height: 1.6; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+  /* ── Detail Modal ── */
+  .modal-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(10,14,26,0.85); z-index: 100; align-items: center; justify-content: center; padding: 20px;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--navy-mid); border: 1px solid var(--border);
+    border-radius: 16px; width: 100%; max-width: 560px; max-height: 88vh; overflow-y: auto;
+    padding: 28px;
+  }
+  .modal-close { float: right; background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 20px; margin-top: -4px; }
+  .modal-close:hover { color: var(--text); }
+  .detail-bean { font-family: 'Noto Serif KR', serif; font-size: 22px; color: var(--cream); margin-bottom: 6px; }
+  .detail-date { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--copper); letter-spacing: 0.15em; margin-bottom: 18px; }
+  .detail-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border-soft); font-size: 13px; }
+  .detail-row:last-child { border-bottom: none; }
+  .detail-key { color: var(--text-muted); }
+  .detail-val { color: var(--text-soft); font-family: 'DM Mono', monospace; font-size: 12px; }
+  .detail-section { margin-top: 18px; }
+  .detail-section-label { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--copper); letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 10px; }
+  .pour-table { width: 100%; border-collapse: collapse; font-family: 'DM Mono', monospace; font-size: 12px; }
+  .pour-table th { color: var(--text-muted); font-weight: 400; padding: 4px 8px; text-align: left; border-bottom: 1px solid var(--border-soft); }
+  .pour-table td { color: var(--text-soft); padding: 6px 8px; border-bottom: 1px solid var(--border-soft); }
+  .pour-table tr:last-child td { border-bottom: none; }
+  .detail-cupping { margin-top: 18px; font-size: 14px; color: var(--text-soft); font-style: italic; line-height: 1.7; font-family: 'Noto Serif KR', serif; }
+
+  /* ── Bean History ── */
+  .bean-history-group { margin-bottom: 28px; }
+  .bean-history-name {
+    font-family: 'Noto Serif KR', serif; font-size: 18px; color: var(--cream);
+    padding-bottom: 8px; border-bottom: 1px solid var(--border); margin-bottom: 14px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .bean-count { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--copper); letter-spacing: 0.1em; }
+
+  /* ── Empty State ── */
+  .empty { text-align: center; padding: 56px 20px; color: var(--text-muted); }
+  .empty-icon { font-size: 36px; margin-bottom: 12px; opacity: 0.4; }
+  .empty-text { font-size: 14px; }
+
+  /* ── Filter Bar ── */
+  .filter-bar { display: flex; gap: 8px; margin-bottom: 18px; flex-wrap: wrap; align-items: center; }
+  .filter-bar select { width: auto; flex: 1; min-width: 140px; }
+  .filter-reset { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 12px; padding: 4px 8px; transition: color 0.1s; white-space: nowrap; }
+  .filter-reset:hover { color: var(--copper); }
+
+  /* ── Toast ── */
+  .toast {
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+    background: var(--navy-light); border: 1px solid var(--border);
+    border-radius: 8px; padding: 10px 20px;
+    font-size: 13px; color: var(--cream); z-index: 200;
+    opacity: 0; transition: opacity 0.2s; pointer-events: none;
+  }
+  .toast.show { opacity: 1; }
+
+  /* ── Scrollbar ── */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+  /* ── Responsive ── */
+  @media (max-width: 520px) {
+    .form-grid { grid-template-columns: 1fr; }
+    .form-group.full { grid-column: 1; }
+    .pour-row { grid-template-columns: 36px 1fr 1fr 28px; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="logo">
+      <div class="logo-title">드립 노트</div>
+      <div class="logo-sub">Hand Drip Brew Log</div>
+    </div>
+  </header>
+
+  <nav>
+    <button class="nav-btn active" onclick="showSection('brew-log')">브루잉 기록</button>
+    <button class="nav-btn" onclick="showSection('new-brew')">새 브루잉</button>
+    <button class="nav-btn" onclick="showSection('bean-history')">원두별 보기</button>
+    <button class="nav-btn" onclick="showSection('equipment')">장비 관리</button>
+  </nav>
+
+  <!-- ═══ BREW LOG ═══ -->
+  <div id="brew-log" class="section visible">
+    <div class="filter-bar">
+      <select id="filter-bean" onchange="renderLog()">
+        <option value="">모든 원두</option>
+      </select>
+      <select id="filter-dripper" onchange="renderLog()">
+        <option value="">모든 드리퍼</option>
+      </select>
+      <button class="filter-reset" onclick="resetFilters()">초기화</button>
+    </div>
+    <div id="log-list"></div>
+  </div>
+
+  <!-- ═══ NEW BREW ═══ -->
+  <div id="new-brew" class="section">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">브루잉 정보</div>
+      </div>
+      <div class="form-grid">
+
+        <div class="form-group">
+          <div class="form-label">원두</div>
+          <div style="display:flex;gap:6px;">
+            <select id="b-bean-select" onchange="syncBeanInput()" style="flex:1">
+              <option value="">직접 입력</option>
+            </select>
+          </div>
+          <input type="text" id="b-bean" placeholder="원두명 (예: 에티오피아 예가체프)">
+        </div>
+
+        <div class="form-group">
+          <div class="form-label">드리퍼</div>
+          <select id="b-dripper-select" onchange="syncDripperInput()">
+            <option value="">직접 입력</option>
+          </select>
+          <input type="text" id="b-dripper" placeholder="드리퍼 (예: Hario V60)">
+        </div>
+
+        <div class="form-group">
+          <div class="form-label">그라인더</div>
+          <select id="b-grinder-select" onchange="syncGrinderInput()">
+            <option value="">직접 입력</option>
+          </select>
+          <input type="text" id="b-grinder" placeholder="그라인더 (예: 코만단테 C40)">
+        </div>
+
+        <div class="form-group">
+          <div class="form-label">분쇄도</div>
+          <input type="text" id="b-grind" placeholder="예: 중간-굵게, 클릭 20">
+        </div>
+
+        <div class="form-group">
+          <div class="form-label">물 온도 (°C)</div>
+          <input type="number" id="b-temp" placeholder="92" min="60" max="100">
+        </div>
+
+        <div class="form-group">
+          <div class="form-label">원두 무게 (g)</div>
+          <input type="number" id="b-dose" placeholder="15" min="1" max="100">
+        </div>
+
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="pour-header">
+        <div class="card-title">물 붓기 단계</div>
+        <button class="btn btn-sm btn-ghost" onclick="addPour()">+ 단계 추가</button>
+      </div>
+      <div class="pour-list" id="pour-list">
+        <!-- pours rendered here -->
+      </div>
+      <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--copper);letter-spacing:0.1em;">
+        총 물량: <span id="total-water">0</span> g
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title" style="margin-bottom:14px;">컵 노트</div>
+      <div class="form-group">
+        <div class="form-label">향미 / 느낌</div>
+        <textarea id="b-note" placeholder="예: 복숭아 잼 같은 단맛, 밝은 산미, 길게 남는 다크 초콜릿 여운..."></textarea>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:10px;margin-bottom:32px;">
+      <button class="btn" onclick="saveBrew()" style="flex:1">기록 저장</button>
+      <button class="btn btn-ghost" onclick="clearForm()">초기화</button>
+    </div>
+  </div>
+
+  <!-- ═══ BEAN HISTORY ═══ -->
+  <div id="bean-history" class="section">
+    <div id="bean-history-list"></div>
+  </div>
+
+  <!-- ═══ EQUIPMENT ═══ -->
+  <div id="equipment" class="section">
+    <div class="card">
+      <div class="eq-group">
+        <div class="eq-label">원두</div>
+        <div class="eq-list" id="eq-beans"></div>
+        <div class="eq-add">
+          <input type="text" id="add-bean-input" placeholder="원두명 입력" style="flex:1">
+          <button class="btn btn-sm" onclick="addEquipment('beans')">추가</button>
+        </div>
+      </div>
+      <div class="eq-group">
+        <div class="eq-label">드리퍼</div>
+        <div class="eq-list" id="eq-drippers"></div>
+        <div class="eq-add">
+          <input type="text" id="add-dripper-input" placeholder="드리퍼명 입력" style="flex:1">
+          <button class="btn btn-sm" onclick="addEquipment('drippers')">추가</button>
+        </div>
+      </div>
+      <div class="eq-group" style="margin-bottom:0">
+        <div class="eq-label">그라인더</div>
+        <div class="eq-list" id="eq-grinders"></div>
+        <div class="eq-add">
+          <input type="text" id="add-grinder-input" placeholder="그라인더명 입력" style="flex:1">
+          <button class="btn btn-sm" onclick="addEquipment('grinders')">추가</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ DETAIL MODAL ═══ -->
+<div class="modal-overlay" id="detail-modal" onclick="closeModal(event)">
+  <div class="modal" id="modal-content"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── Storage helpers ──
+const S = {
+  get: k => { try { return JSON.parse(localStorage.getItem(k)) } catch { return null } },
+  set: (k, v) => localStorage.setItem(k, JSON.stringify(v))
+};
+
+// ── State ──
+let db = {
+  equipment: S.get('drip_equipment') || { beans: [], drippers: [], grinders: [] },
+  brews: S.get('drip_brews') || []
+};
+let pours = [{ time: '', water: '' }];
+
+function save() {
+  S.set('drip_equipment', db.equipment);
+  S.set('drip_brews', db.brews);
+}
+
+// ── Navigation ──
+function showSection(id) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('visible'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(id).classList.add('visible');
+  event.currentTarget.classList.add('active');
+  if (id === 'brew-log') renderLog();
+  if (id === 'bean-history') renderBeanHistory();
+  if (id === 'equipment') renderEquipment();
+  if (id === 'new-brew') { populateSelects(); renderPours(); }
+}
+
+// ── Toast ──
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+// ── Equipment ──
+function renderEquipment() {
+  ['beans','drippers','grinders'].forEach(cat => {
+    const el = document.getElementById('eq-' + cat);
+    el.innerHTML = db.equipment[cat].map((item, i) =>
+      `<div class="eq-tag">${item}<button class="del" onclick="removeEquipment('${cat}',${i})">×</button></div>`
+    ).join('') || `<span style="color:var(--text-muted);font-size:12px">아직 없음</span>`;
+  });
+}
+
+function addEquipment(cat) {
+  const map = { beans: 'bean', drippers: 'dripper', grinders: 'grinder' };
+  const inp = document.getElementById(`add-${map[cat]}-input`);
+  const val = inp.value.trim();
+  if (!val) return;
+  if (db.equipment[cat].includes(val)) { toast('이미 있어요'); return; }
+  db.equipment[cat].push(val);
+  save(); renderEquipment();
+  inp.value = '';
+  inp.addEventListener('keydown', e => { if (e.key === 'Enter') addEquipment(cat); }, { once: true });
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && e.target.matches('[id^="add-"]')) {
+    const map = { 'add-bean-input':'beans','add-dripper-input':'drippers','add-grinder-input':'grinders' };
+    const cat = map[e.target.id];
+    if (cat) addEquipment(cat);
+  }
+});
+
+function removeEquipment(cat, i) {
+  db.equipment[cat].splice(i, 1);
+  save(); renderEquipment();
+}
+
+// ── Selects in new brew form ──
+function populateSelects() {
+  const selects = [
+    { id: 'b-bean-select', cat: 'beans' },
+    { id: 'b-dripper-select', cat: 'drippers' },
+    { id: 'b-grinder-select', cat: 'grinders' }
+  ];
+  selects.forEach(({ id, cat }) => {
+    const el = document.getElementById(id);
+    const cur = el.value;
+    el.innerHTML = `<option value="">직접 입력</option>` +
+      db.equipment[cat].map(v => `<option value="${v}">${v}</option>`).join('');
+    el.value = cur;
+  });
+}
+
+function syncBeanInput() {
+  const v = document.getElementById('b-bean-select').value;
+  if (v) document.getElementById('b-bean').value = v;
+}
+function syncDripperInput() {
+  const v = document.getElementById('b-dripper-select').value;
+  if (v) document.getElementById('b-dripper').value = v;
+}
+function syncGrinderInput() {
+  const v = document.getElementById('b-grinder-select').value;
+  if (v) document.getElementById('b-grinder').value = v;
+}
+
+// ── Pours ──
+function renderPours() {
+  const list = document.getElementById('pour-list');
+  list.innerHTML = pours.map((p, i) => `
+    <div class="pour-row">
+      <div class="pour-idx">${String(i+1).padStart(2,'0')}</div>
+      <input type="text" placeholder="시간 (예: 0:00)" value="${p.time}"
+        oninput="pours[${i}].time=this.value">
+      <input type="number" placeholder="물량 (g)" value="${p.water}" min="0"
+        oninput="pours[${i}].water=this.value;updateTotal()">
+      <button class="pour-del" onclick="removePour(${i})">×</button>
+    </div>
+  `).join('');
+  updateTotal();
+}
+
+function addPour() {
+  pours.push({ time: '', water: '' });
+  renderPours();
+}
+
+function removePour(i) {
+  if (pours.length === 1) { pours[0] = { time: '', water: '' }; }
+  else pours.splice(i, 1);
+  renderPours();
+}
+
+function updateTotal() {
+  const total = pours.reduce((s, p) => s + (parseFloat(p.water) || 0), 0);
+  document.getElementById('total-water').textContent = total;
+}
+
+// ── Save brew ──
+function saveBrew() {
+  const bean = document.getElementById('b-bean').value.trim();
+  if (!bean) { toast('원두명을 입력해 주세요'); return; }
+
+  const brew = {
+    id: Date.now(),
+    date: new Date().toISOString(),
+    bean,
+    dripper: document.getElementById('b-dripper').value.trim(),
+    grinder: document.getElementById('b-grinder').value.trim(),
+    grind: document.getElementById('b-grind').value.trim(),
+    temp: document.getElementById('b-temp').value,
+    dose: document.getElementById('b-dose').value,
+    pours: pours.filter(p => p.time || p.water).map(p => ({ ...p })),
+    note: document.getElementById('b-note').value.trim()
+  };
+
+  db.brews.unshift(brew);
+  save();
+  toast('브루잉 기록이 저장됐어요 ☕');
+  clearForm();
+  showSectionById('brew-log');
+}
+
+function clearForm() {
+  ['b-bean','b-dripper','b-grinder','b-grind','b-temp','b-dose','b-note'].forEach(id => {
+    document.getElementById(id).value = '';
+  });
+  ['b-bean-select','b-dripper-select','b-grinder-select'].forEach(id => {
+    document.getElementById(id).value = '';
+  });
+  pours = [{ time: '', water: '' }];
+  renderPours();
+}
+
+function showSectionById(id) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('visible'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(id).classList.add('visible');
+  document.querySelectorAll('.nav-btn')[0].classList.add('active');
+  renderLog();
+}
+
+// ── Log ──
+function renderLog() {
+  const beanFilter = document.getElementById('filter-bean').value;
+  const dripperFilter = document.getElementById('filter-dripper').value;
+  const list = document.getElementById('log-list');
+
+  // update filter options
+  const beans = [...new Set(db.brews.map(b => b.bean).filter(Boolean))];
+  const drippers = [...new Set(db.brews.map(b => b.dripper).filter(Boolean))];
+  const bSel = document.getElementById('filter-bean');
+  const dSel = document.getElementById('filter-dripper');
+  const curBean = bSel.value; const curDripper = dSel.value;
+  bSel.innerHTML = `<option value="">모든 원두</option>` + beans.map(b => `<option value="${b}">${b}</option>`).join('');
+  dSel.innerHTML = `<option value="">모든 드리퍼</option>` + drippers.map(d => `<option value="${d}">${d}</option>`).join('');
+  bSel.value = curBean; dSel.value = curDripper;
+
+  let filtered = db.brews;
+  if (beanFilter) filtered = filtered.filter(b => b.bean === beanFilter);
+  if (dripperFilter) filtered = filtered.filter(b => b.dripper === dripperFilter);
+
+  if (!filtered.length) {
+    list.innerHTML = `<div class="empty"><div class="empty-icon">☕</div><div class="empty-text">아직 기록이 없어요.<br>첫 브루잉을 기록해 보세요.</div></div>`;
+    return;
+  }
+
+  list.innerHTML = filtered.map(b => {
+    const d = new Date(b.date);
+    const dateStr = `${d.getFullYear()}.${String(d.getMonth()+1).padStart(2,'0')}.${String(d.getDate()).padStart(2,'0')}`;
+    const timeStr = `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+    const chips = [
+      b.dripper && b.dripper,
+      b.grinder && b.grinder,
+      b.temp && `${b.temp}°C`,
+      b.dose && `${b.dose}g`,
+      b.grind && b.grind
+    ].filter(Boolean);
+    return `<div class="log-entry" onclick="openDetail(${b.id})">
+      <div class="log-entry-top">
+        <div class="log-bean">${b.bean}</div>
+        <div class="log-meta">${dateStr} ${timeStr}</div>
+      </div>
+      ${chips.length ? `<div class="log-tags">${chips.map(c=>`<span class="log-chip">${c}</span>`).join('')}</div>` : ''}
+      ${b.note ? `<div class="log-note">${b.note}</div>` : ''}
+    </div>`;
+  }).join('');
+}
+
+function resetFilters() {
+  document.getElementById('filter-bean').value = '';
+  document.getElementById('filter-dripper').value = '';
+  renderLog();
+}
+
+// ── Detail Modal ──
+function openDetail(id) {
+  const b = db.brews.find(x => x.id === id);
+  if (!b) return;
+  const d = new Date(b.date);
+  const dateStr = `${d.getFullYear()}.${String(d.getMonth()+1).padStart(2,'0')}.${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+
+  const rows = [
+    ['드리퍼', b.dripper],
+    ['그라인더', b.grinder],
+    ['분쇄도', b.grind],
+    ['물 온도', b.temp ? b.temp + '°C' : ''],
+    ['원두 무게', b.dose ? b.dose + 'g' : ''],
+  ].filter(r => r[1]);
+
+  const totalWater = b.pours.reduce((s, p) => s + (parseFloat(p.water) || 0), 0);
+
+  document.getElementById('modal-content').innerHTML = `
+    <button class="modal-close" onclick="document.getElementById('detail-modal').classList.remove('open')">×</button>
+    <div class="detail-bean">${b.bean}</div>
+    <div class="detail-date">${dateStr}</div>
+    ${rows.map(r => `<div class="detail-row"><span class="detail-key">${r[0]}</span><span class="detail-val">${r[1]}</span></div>`).join('')}
+    ${b.pours.length ? `
+      <div class="detail-section">
+        <div class="detail-section-label">물 붓기 단계</div>
+        <table class="pour-table">
+          <tr><th>단계</th><th>시간</th><th>물량</th></tr>
+          ${b.pours.map((p,i) => `<tr><td>${String(i+1).padStart(2,'0')}</td><td>${p.time||'-'}</td><td>${p.water ? p.water+'g' : '-'}</td></tr>`).join('')}
+          <tr><td colspan="2" style="color:var(--copper)">총합</td><td style="color:var(--copper)">${totalWater}g</td></tr>
+        </table>
+      </div>
+    ` : ''}
+    ${b.note ? `<div class="detail-cupping">"${b.note}"</div>` : ''}
+    <div style="display:flex;gap:8px;margin-top:20px;">
+      <button class="btn btn-danger btn-sm" onclick="deleteBrew(${b.id})">삭제</button>
+    </div>
+  `;
+  document.getElementById('detail-modal').classList.add('open');
+}
+
+function closeModal(e) {
+  if (e.target === document.getElementById('detail-modal'))
+    document.getElementById('detail-modal').classList.remove('open');
+}
+
+function deleteBrew(id) {
+  if (!confirm('이 기록을 삭제할까요?')) return;
+  db.brews = db.brews.filter(b => b.id !== id);
+  save();
+  document.getElementById('detail-modal').classList.remove('open');
+  renderLog();
+  toast('삭제됐어요');
+}
+
+// ── Bean History ──
+function renderBeanHistory() {
+  const container = document.getElementById('bean-history-list');
+  const grouped = {};
+  db.brews.forEach(b => {
+    if (!grouped[b.bean]) grouped[b.bean] = [];
+    grouped[b.bean].push(b);
+  });
+  const beans = Object.keys(grouped);
+  if (!beans.length) {
+    container.innerHTML = `<div class="empty"><div class="empty-icon">☕</div><div class="empty-text">기록이 없어요.</div></div>`;
+    return;
+  }
+  container.innerHTML = beans.map(bean => {
+    const entries = grouped[bean];
+    return `<div class="bean-history-group">
+      <div class="bean-history-name">
+        <span>${bean}</span>
+        <span class="bean-count">${entries.length}회</span>
+      </div>
+      ${entries.map(b => {
+        const d = new Date(b.date);
+        const dateStr = `${d.getFullYear()}.${String(d.getMonth()+1).padStart(2,'0')}.${String(d.getDate()).padStart(2,'0')}`;
+        return `<div class="log-entry" onclick="openDetail(${b.id})">
+          <div class="log-entry-top">
+            <div style="font-size:13px;color:var(--text-soft)">${[b.dripper,b.temp&&b.temp+'°C',b.dose&&b.dose+'g'].filter(Boolean).join(' · ')}</div>
+            <div class="log-meta">${dateStr}</div>
+          </div>
+          ${b.note ? `<div class="log-note">${b.note}</div>` : ''}
+        </div>`;
+      }).join('')}
+    </div>`;
+  }).join('');
+}
+
+// ── Init ──
+renderEquipment();
+renderLog();
+renderPours();
+populateSelects();
+</script>
+</body>
+</html>
